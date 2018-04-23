@@ -20,7 +20,7 @@ const toggleBlobOfFetchSupport = disabled => {
   }
 };
 
-export const toggleNetworkInspect = enabled => {
+export const toggleNetworkInspect = (enabled, NativeModules) => {
   if (!enabled && networkInspect) {
     self.XMLHttpRequest = networkInspect.XMLHttpRequest;
     self.FormData = networkInspect.FormData;
@@ -48,6 +48,45 @@ export const toggleNetworkInspect = enabled => {
   self.XMLHttpRequest = self.originalXMLHttpRequest
     ? self.originalXMLHttpRequest
     : self.XMLHttpRequest;
+
+  const originaOpen = self.XMLHttpRequest.prototype.open;
+  self.XMLHttpRequest.prototype.open = function open(...args) {
+    this._url = args[1];
+    return originaOpen.apply(this, args);
+  };
+
+  const originalSend = self.XMLHttpRequest.prototype.send;
+  self.XMLHttpRequest.prototype.send = function send(...args) {
+    const url = new URL(this._url);
+    const domainName = url.host;
+
+    if (NativeModules) {
+      const { RNCookieManagerAndroid, RNCookieManagerIOS } = NativeModules;
+      if (RNCookieManagerIOS && RNCookieManagerIOS.getAll) {
+        RNCookieManagerIOS.getAll((cookies) => {
+          const cookieString = Object.keys(cookies).reduce((pre, next) => {
+            const { name, value, domain } = cookies[next];
+            if (domain === domainName) {
+              return `${pre}; ${name}=${value}`;
+            }
+            return pre;
+          }, '');
+          this.setRequestHeader('Cookie', cookieString);
+          originalSend.apply(this, args);
+        });
+      }
+
+      if (RNCookieManagerAndroid && RNCookieManagerAndroid.fetchCookieForDomain) {
+        RNCookieManagerAndroid.fetchCookieForDomain(domainName, (cookies) => {
+          this.setRequestHeader('Cookie', cookies);
+          originalSend.call(this, args);
+        });
+      }
+    } else {
+      originalSend.call(this, args);
+    }
+  };
+
   self.FormData = self.originalFormData ? self.originalFormData : self.FormData;
 
   toggleBlobOfFetchSupport(true);

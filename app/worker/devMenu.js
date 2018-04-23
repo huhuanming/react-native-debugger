@@ -30,7 +30,7 @@ export const checkAvailableDevMenuMethods = async (
   const result = Object.keys(methods).filter(key => !!methods[key]);
   availableDevMenuMethods = methods;
 
-  toggleNetworkInspect(enableNetworkInspect);
+  toggleNetworkInspect(enableNetworkInspect, NativeModules);
   postMessage({ __AVAILABLE_METHODS_CAN_CALL_BY_RNDEBUGGER__: result });
 };
 
