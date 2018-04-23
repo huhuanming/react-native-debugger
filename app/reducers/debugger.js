@@ -27,7 +27,7 @@ function getStatusMessage(status, port) {
   if (status !== 'new') {
     message += ` (port ${port})`;
   }
-  const title = `React Native Debugger - ${message}`;
+  const title = `蜀山派 React Native Debugger - ${message}`;
   if (title !== document.title) {
     document.title = title;
   }
