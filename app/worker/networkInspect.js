@@ -57,9 +57,11 @@ export const toggleNetworkInspect = (enabled, NativeModules) => {
 
   const originalSend = self.XMLHttpRequest.prototype.send;
   self.XMLHttpRequest.prototype.send = function send(...args) {
-    const url = new URL(this._url);
-    const domainName = url.host;
-
+    // Cannot work on React Native 0.54 version
+    // https://github.com/facebook/react-native/issues/16434
+    // const url = new URL(this._url);
+    // const domainName = url.host;
+    const domainName = this._url.split('/')[2];
     if (NativeModules) {
       const { RNCookieManagerAndroid, RNCookieManagerIOS } = NativeModules;
       if (RNCookieManagerIOS && RNCookieManagerIOS.getAll) {
