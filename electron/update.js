@@ -11,7 +11,7 @@ export default (icon, notify) => {
 
   checking = true;
   const updater = new GhReleases({
-    repo: 'jhen0409/react-native-debugger',
+    repo: 'huhuanming/react-native-debugger',
     currentVersion: app.getVersion(),
   });
 
@@ -47,7 +47,7 @@ export default (icon, notify) => {
       });
       checking = false;
       if (index === 1) return;
-      shell.openExternal('https://github.com/jhen0409/react-native-debugger/releases');
+      shell.openExternal('https://github.com/huhuanming/react-native-debugger/releases');
       console.log('[Updater] Open external link.');
       return;
     }
